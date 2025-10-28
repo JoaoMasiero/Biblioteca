@@ -10,7 +10,7 @@ namespace Biblioteca.Models
         public int DataPublicacao { get; set; }
 
         // Listas para popular os dropdowns na view
-        public SelectList? Editora { get; set; }
-        public SelectList? Livro { get; set; }
+        public SelectList? Editoras { get; set; }
+        public SelectList? Livros { get; set; }
     }
 }

@@ -156,11 +156,13 @@ namespace Biblioteca.Controllers
 
         public IActionResult LancarEdicao()
         {
-
             var viewModel = new PublicacaoViewModel
             {
-                Livro = new SelectList(_context.Livros, "LivroID", "Nome"),
-                Editora = new SelectList(_context.Editoras, "EditoraID", "Titulo")
+                // CORREÇÃO AQUI: Use "LivroId" e "LivroNome"
+                Livros = new SelectList(_context.Livros, "LivroId", "LivroNome"),
+
+                // CORREÇÃO AQUI: Use "EditoraId" (provavelmente) e "Titulo"
+                Editoras = new SelectList(_context.Editoras, "EditoraId", "EditoraNome")
             };
             return View(viewModel);
         }
@@ -173,8 +175,11 @@ namespace Biblioteca.Controllers
             if (!ModelState.IsValid)
             {
                 // Recarrega as listas se houver erro de validação
-                model.Livro = new SelectList(_context.Livros, "LivroID", "Nome");
-                model.Editora = new SelectList(_context.Editoras, "EditoraID", "Titulo");
+
+                // CORREÇÃO AQUI TAMBÉM:
+                model.Livros = new SelectList(_context.Livros, "LivroId", "LivroNome");
+                model.Editoras = new SelectList(_context.Editoras, "EditoraId", "EditoraNome");
+
                 return View("LancarEdicao", model);
             }
 
@@ -196,7 +201,7 @@ namespace Biblioteca.Controllers
             }
             else
             {
-                // Se o relacionamento JÁ existe, atualiza a nota
+                // Se o relacionamento JÁ existe, atualiza a edicao/data
                 Publicacao.Edicao = model.Edicao;
                 Publicacao.DataPublicacao = model.DataPublicacao;
                 _context.Publicacoes.Update(Publicacao);
@@ -204,8 +209,8 @@ namespace Biblioteca.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Redireciona para uma página de sucesso, como a de detalhes do aluno
-            return RedirectToAction("Details", "Editora", new { id = model.EditoraId });
+            // Redireciona para uma página de sucesso
+            return RedirectToAction("Details", "Editoras", new { id = model.EditoraId });
         }
 
         private bool PublicacaoExists(int id)

@@ -29,7 +29,14 @@ namespace Biblioteca.Data
 
             modelBuilder.Entity<Publicacao>()
                 .HasKey(cd => new { cd.EditoraId, cd.LivroId, cd.DataPublicacao, cd.Edicao });
-
+            modelBuilder.Entity<Publicacao>()
+               .HasOne(aa => aa.Editora)
+               .WithMany(a => a.Publicacoes)
+               .HasForeignKey(aa => aa.EditoraId);
+            modelBuilder.Entity<Publicacao>()
+                .HasOne(aa => aa.Livro)
+                .WithMany(av => av.Publicacoes)
+                .HasForeignKey(aa => aa.LivroId);
         }
 
     }
