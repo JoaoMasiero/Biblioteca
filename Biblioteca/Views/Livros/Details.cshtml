@@ -34,6 +34,31 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Disponivel)
         </dd>
+
+        <dd class="col-sm-10">
+            <h1>Edições de @Model.LivroNome</h1>
+
+            @if (Model.Publicacoes.Any())
+            {
+                <ul>
+                    @foreach (var publicacao in Model.Publicacoes)
+                    {
+                        <li>
+							Editora: @publicacao.Editora.EditoraNome
+                            <br />
+                            Edição: @publicacao.Edicao
+                            <br />
+                            Data de Publicação: @publicacao.DataPublicacao
+                        </li>
+                        <br />
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Este livro não possui edições publicadas</p>
+            }
+        </dd>
     </dl>
 </div>
 <div>

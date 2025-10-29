@@ -34,7 +34,10 @@ namespace Biblioteca.Controllers
             }
 
             var livro = await _context.Livros
+                .Include(l => l.Publicacoes)
+                    .ThenInclude(p => p.Editora) // Supondo que a prop. em Publicacao.cs é "Editora"
                 .FirstOrDefaultAsync(m => m.LivroId == id);
+
             if (livro == null)
             {
                 return NotFound();
