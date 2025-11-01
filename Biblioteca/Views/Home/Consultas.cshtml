@@ -1,0 +1,74 @@
+﻿@{
+    ViewData["Title"] = "Consultas LINQ";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Demonstração das 3 consultas LINQ pedidas no trabalho.</p>
+
+<hr />
+
+<h2>1. Consulta com JOIN (Livros e Editoras)</h2>
+<p>"Quais livros foram publicados por quais editoras?"</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome do Livro</th>
+            <th>Nome da Editora</th>
+            <th>Ano da Publicação</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ViewBag.Consulta1)
+        {
+            <tr>
+                <td>@item.NomeLivro</td>
+                <td>@item.NomeEditora</td>
+                <td>@item.AnoPublicacao</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h2>2. Consulta com Agrupamento (GROUP BY)</h2>
+<p>"Quantos livros cada editora publicou?"</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome da Editora</th>
+            <th>Total de Livros</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ViewBag.Consulta2)
+        {
+            <tr>
+                <td>@item.NomeEditora</td>
+                <td>@item.TotalDeLivros</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h2>3. Consulta com WHERE e HAVING</h2>
+<p>"Quais editoras publicaram MAIS DE 1 livro, considerando apenas livros lançados DEPOIS do ano 2000?"</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome da Editora</th>
+            <th>Total de Livros (Lançados > 2000)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ViewBag.Consulta3)
+        {
+            <tr>
+                <td>@item.NomeEditora</td>
+                <td>@item.TotalLivrosRecentes</td>
+            </tr>
+        }
+    </tbody>
+</table>

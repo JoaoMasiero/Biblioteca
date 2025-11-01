@@ -35,7 +35,7 @@ namespace Biblioteca.Controllers
 
             var livro = await _context.Livros
                 .Include(l => l.Publicacoes)
-                    .ThenInclude(p => p.Editora) // Supondo que a prop. em Publicacao.cs é "Editora"
+                    .ThenInclude(p => p.Editora)
                 .FirstOrDefaultAsync(m => m.LivroId == id);
 
             if (livro == null)
@@ -161,10 +161,8 @@ namespace Biblioteca.Controllers
         {
             var viewModel = new PublicacaoViewModel
             {
-                // CORREÇÃO AQUI: Use "LivroId" e "LivroNome"
                 Livros = new SelectList(_context.Livros, "LivroId", "LivroNome"),
 
-                // CORREÇÃO AQUI: Use "EditoraId" (provavelmente) e "Titulo"
                 Editoras = new SelectList(_context.Editoras, "EditoraId", "EditoraNome")
             };
             return View(viewModel);
@@ -174,25 +172,19 @@ namespace Biblioteca.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SalvarPublicacao(PublicacaoViewModel model)
         {
-            // Validações básicas do modelo
             if (!ModelState.IsValid)
             {
-                // Recarrega as listas se houver erro de validação
-
-                // CORREÇÃO AQUI TAMBÉM:
                 model.Livros = new SelectList(_context.Livros, "LivroId", "LivroNome");
                 model.Editoras = new SelectList(_context.Editoras, "EditoraId", "EditoraNome");
 
                 return View("LancarEdicao", model);
             }
 
-            // Tenta encontrar um relacionamento existente
             var Publicacao = await _context.Publicacoes
                 .FirstOrDefaultAsync(aa => aa.EditoraId == model.EditoraId && aa.LivroId == model.LivroId);
 
             if (Publicacao == null)
             {
-                // Se o relacionamento NÃO existe, cria um novo
                 Publicacao = new Publicacao
                 {
                     EditoraId = model.EditoraId,
@@ -204,7 +196,6 @@ namespace Biblioteca.Controllers
             }
             else
             {
-                // Se o relacionamento JÁ existe, atualiza a edicao/data
                 Publicacao.Edicao = model.Edicao;
                 Publicacao.DataPublicacao = model.DataPublicacao;
                 _context.Publicacoes.Update(Publicacao);
@@ -212,7 +203,6 @@ namespace Biblioteca.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Redireciona para uma página de sucesso
             return RedirectToAction("Details", "Editoras", new { id = model.EditoraId });
         }
 

@@ -28,7 +28,7 @@ namespace Biblioteca.Data
                 .HasForeignKey(cd => cd.LivroId);
 
             modelBuilder.Entity<Publicacao>()
-                .HasKey(cd => new { cd.EditoraId, cd.LivroId, cd.DataPublicacao, cd.Edicao });
+                .HasKey(cd => new { cd.EditoraId, cd.LivroId });
             modelBuilder.Entity<Publicacao>()
                .HasOne(aa => aa.Editora)
                .WithMany(a => a.Publicacoes)
