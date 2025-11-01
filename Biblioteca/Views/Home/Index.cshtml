@@ -1,8 +1,67 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Página Inicial";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-7 py-5">
+                <h1 class="display-5 fw-bold">Bem-vindo ao Sistema de Biblioteca</h1>
+
+                <p class="fs-4">Gerencie livros, autores, editoras e leitores de forma simples e eficiente.</p>
+
+                <a asp-controller="Livros" asp-action="Index" class="btn btn-primary btn-lg">
+                    <i class="bi bi-book-fill"></i>
+                    Gerenciar Livros
+                </a>
+            </div>
+
+            <div class="col-md-5 text-center">
+
+                <img src="~/img/gatinho_nerd.jpg" alt="A segunda-a segunda temporada de calamidade" />
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+</div>
+
+<div class="row text-center">
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body text-center">
+                <h2 class="card-title">@ViewBag.TotalLivros</h2>
+                <p class="card-text fs-5">Livros Cadastrados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body text-center">
+                <h2 class="card-title">@ViewBag.TotalAutores</h2>
+                <p class="card-text fs-5">Autores Cadastrados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body text-center">
+                <h2 class="card-title">@ViewBag.TotalEditoras</h2>
+                <p class="card-text fs-5">Editoras Cadastradas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body text-center">
+                <h2 class="card-title">@ViewBag.TotalLeitores</h2>
+                <p class="card-text fs-5">Leitores Cadastrados</p>
+            </div>
+        </div>
+    </div>
 </div>

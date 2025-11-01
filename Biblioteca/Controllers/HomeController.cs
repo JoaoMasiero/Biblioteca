@@ -8,15 +8,25 @@ namespace Biblioteca.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly ILogger<HomeController> _logger;
         private readonly BibliotecaContext _context;
 
-        public HomeController(BibliotecaContext context)
+        public HomeController(ILogger<HomeController> logger, BibliotecaContext context)
         {
+            _logger = logger;
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            ViewBag.TotalLivros = await _context.Livros.CountAsync();
+
+            ViewBag.TotalAutores = await _context.Autores.CountAsync();
+
+            ViewBag.TotalEditoras = await _context.Editoras.CountAsync();
+
+            ViewBag.TotalLeitores = await _context.Leitores.CountAsync();
+
             return View();
         }
 
