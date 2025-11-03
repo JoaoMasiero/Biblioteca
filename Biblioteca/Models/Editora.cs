@@ -13,7 +13,7 @@ namespace Biblioteca.Models
         public string Cidade { get; set; }
         [Required(ErrorMessage = "O telefone da editora é obrigatório!")]
         [RegularExpression(@"\(\d{2}\) \d{5}-\d{4}", ErrorMessage = "O telefone deve estar no formato (99) 99999-9999")]
-        public int Telefone { get; set; }
+        public string Telefone { get; set; }
         public ICollection<Publicacao> Publicacoes { get; set; } = new List<Publicacao>();
     }
 }
