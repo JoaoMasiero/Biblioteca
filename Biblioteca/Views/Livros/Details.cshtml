@@ -35,6 +35,25 @@
             @Html.DisplayFor(model => model.Disponivel)
         </dd>
 
+        <dt class="col-sm-2">
+            Autores
+        </dt>
+        <dd class="col-sm-10">
+            @if (Model.AutoresLivros.Any())
+            {
+                <ul class="list-unstyled">
+                    @foreach (var autorLivro in Model.AutoresLivros)
+                    {
+                        <li>@autorLivro.Autor.AutorNome</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Nenhum autor cadastrado para este livro.</p>
+            }
+        </dd>
+
         <dd class="col-sm-10">
             <h1>Edições de @Model.LivroNome</h1>
 
@@ -60,6 +79,9 @@
             }
         </dd>
     </dl>
+    <dt class="col-sm-2">
+        Autores
+    </dt>
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.LivroId">Editar</a> |

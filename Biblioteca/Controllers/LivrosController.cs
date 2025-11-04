@@ -34,8 +34,12 @@ namespace Biblioteca.Controllers
             }
 
             var livro = await _context.Livros
+                // Inclui as publicações (como fizemos antes)
                 .Include(l => l.Publicacoes)
                     .ThenInclude(p => p.Editora)
+                // NOVO: Inclui a tabela de junção e, a partir dela, os Autores
+                .Include(l => l.AutoresLivros)
+                    .ThenInclude(al => al.Autor) // 'Autor' é a prop. de navegação em AutorLivro.cs
                 .FirstOrDefaultAsync(m => m.LivroId == id);
 
             if (livro == null)
@@ -49,7 +53,12 @@ namespace Biblioteca.Controllers
         // GET: Livros/Create
         public IActionResult Create()
         {
-            return View();
+            var viewModel = new LivroCreateViewModel
+            {
+                // Popula a lista de autores para o dropdown
+                AutoresDisponiveis = new SelectList(_context.Autores, "AutorId", "AutorNome")
+            };
+            return View(viewModel);
         }
 
         // POST: Livros/Create
@@ -57,15 +66,44 @@ namespace Biblioteca.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("LivroId,LivroNome,Genero,AnoLancamento,Disponivel")] Livro livro)
+        public async Task<IActionResult> Create(LivroCreateViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
+                // 1. Criar o objeto Livro principal
+                var livro = new Livro
+                {
+                    LivroNome = viewModel.LivroNome,
+                    Genero = viewModel.Genero,
+                    AnoLancamento = viewModel.AnoLancamento,
+                    Disponivel = viewModel.Disponivel,
+                    AutoresLivros = new List<AutorLivro>() // Inicializa a coleção
+                };
+
+                // 2. Iterar sobre os IDs dos autores selecionados
+                if (viewModel.AutoresSelecionadosIDs != null)
+                {
+                    foreach (var autorId in viewModel.AutoresSelecionadosIDs)
+                    {
+                        // 3. Criar a entidade de junção (AutorLivro) para cada autor
+                        var autorLivro = new AutorLivro
+                        {
+                            AutorId = autorId,
+                            Livro = livro // O EF é inteligente e ligará o LivroId quando salvar
+                        };
+                        livro.AutoresLivros.Add(autorLivro);
+                    }
+                }
+
+                // 4. Adicionar o livro (e seus AutoresLivros) ao contexto
                 _context.Add(livro);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(livro);
+
+            // 5. Se o modelo for inválido, repopular a lista de autores antes de reexibir
+            viewModel.AutoresDisponiveis = new SelectList(_context.Autores, "AutorId", "AutorNome");
+            return View(viewModel);
         }
 
         // GET: Livros/Edit/5
@@ -76,12 +114,33 @@ namespace Biblioteca.Controllers
                 return NotFound();
             }
 
-            var livro = await _context.Livros.FindAsync(id);
+            // 1. Busca o livro E seus autores já relacionados
+            var livro = await _context.Livros
+                .Include(l => l.AutoresLivros) // Traz a tabela de junção
+                .FirstOrDefaultAsync(l => l.LivroId == id);
+
             if (livro == null)
             {
                 return NotFound();
             }
-            return View(livro);
+
+            // 2. Cria o ViewModel
+            var viewModel = new LivroEditViewModel
+            {
+                LivroId = livro.LivroId,
+                LivroNome = livro.LivroNome,
+                Genero = livro.Genero,
+                AnoLancamento = livro.AnoLancamento,
+                Disponivel = livro.Disponivel,
+
+                // 3. Popula a lista de autores disponíveis (todos)
+                AutoresDisponiveis = new SelectList(_context.Autores, "AutorId", "AutorNome"),
+
+                // 4. Popula a lista de IDs que já estão selecionados
+                AutoresSelecionadosIDs = livro.AutoresLivros.Select(al => al.AutorId).ToList()
+            };
+
+            return View(viewModel);
         }
 
         // POST: Livros/Edit/5
@@ -89,9 +148,9 @@ namespace Biblioteca.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("LivroId,LivroNome,Genero,AnoLancamento,Disponivel")] Livro livro)
+        public async Task<IActionResult> Edit(int id, LivroEditViewModel viewModel)
         {
-            if (id != livro.LivroId)
+            if (id != viewModel.LivroId)
             {
                 return NotFound();
             }
@@ -100,23 +159,72 @@ namespace Biblioteca.Controllers
             {
                 try
                 {
-                    _context.Update(livro);
+                    // 1. Busca o livro original do banco, incluindo seus autores atuais
+                    var livroParaAtualizar = await _context.Livros
+                        .Include(l => l.AutoresLivros) // Essencial para comparar!
+                        .FirstOrDefaultAsync(l => l.LivroId == viewModel.LivroId);
+
+                    if (livroParaAtualizar == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // 2. Atualiza as propriedades simples
+                    livroParaAtualizar.LivroNome = viewModel.LivroNome;
+                    livroParaAtualizar.Genero = viewModel.Genero;
+                    livroParaAtualizar.AnoLancamento = viewModel.AnoLancamento;
+                    livroParaAtualizar.Disponivel = viewModel.Disponivel;
+
+                    // 3. Atualiza os relacionamentos (a parte mais complexa)
+
+                    // 3a. Remove os autores que foram desmarcados
+                    var autoresParaRemover = new List<AutorLivro>();
+                    foreach (var autorLivro in livroParaAtualizar.AutoresLivros)
+                    {
+                        // Se o autor atual (do banco) NÃO está na nova lista de IDs (do form)...
+                        if (!viewModel.AutoresSelecionadosIDs.Contains(autorLivro.AutorId))
+                        {
+                            autoresParaRemover.Add(autorLivro);
+                        }
+                    }
+                    _context.AutoresLivros.RemoveRange(autoresParaRemover); // Remove os desmarcados
+
+                    // 3b. Adiciona os autores que foram recém-marcados
+                    foreach (var autorId in viewModel.AutoresSelecionadosIDs)
+                    {
+                        // Se a nova lista de IDs (do form) tem um ID que NÃO existe no banco...
+                        var jaExiste = livroParaAtualizar.AutoresLivros
+                                        .Any(al => al.AutorId == autorId);
+
+                        if (!jaExiste)
+                        {
+                            // Adiciona o novo relacionamento
+                            livroParaAtualizar.AutoresLivros.Add(new AutorLivro
+                            {
+                                AutorId = autorId,
+                                LivroId = livroParaAtualizar.LivroId
+                            });
+                        }
+                    }
+
+                    // 4. Salva tudo
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!LivroExists(livro.LivroId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(livro);
+
+            // Se o modelo for inválido, repopular a lista
+            viewModel.AutoresDisponiveis = new SelectList(_context.Autores, "AutorId", "AutorNome");
+            return View(viewModel);
+        }
+
+        // (Não se esqueça do seu método LivroExists(int id) )
+        private bool LivroExists(int id)
+        {
+            return _context.Livros.Any(e => e.LivroId == id);
         }
 
         // GET: Livros/Delete/5
@@ -152,7 +260,7 @@ namespace Biblioteca.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool LivroExists(int id)
+        private bool LivroExist(int id)
         {
             return _context.Livros.Any(e => e.LivroId == id);
         }

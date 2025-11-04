@@ -1,10 +1,10 @@
-﻿@model Biblioteca.Models.Livro
+﻿@model Biblioteca.Models.LivroEditViewModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Livro";
 }
 
-<h1>Editar</h1>
+<h1>@ViewData["Title"]</h1>
 
 <h4>Livro</h4>
 <hr />
@@ -12,7 +12,9 @@
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <input type="hidden" asp-for="LivroId" />
+
             <div class="form-group">
                 <label asp-for="LivroNome" class="control-label"></label>
                 <input asp-for="LivroNome" class="form-control" />
@@ -25,15 +27,26 @@
             </div>
             <div class="form-group">
                 <label asp-for="AnoLancamento" class="control-label"></label>
-                <input asp-for="AnoLancamento" class="form-control" />
+                <input asp-for="AnoLancamento" class="form-control" type="number" />
                 <span asp-validation-for="AnoLancamento" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
+            <div class="form-group form-check mt-2">
                 <label class="form-check-label">
                     <input class="form-check-input" asp-for="Disponivel" /> @Html.DisplayNameFor(model => model.Disponivel)
                 </label>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mt-3">
+                <label asp-for="AutoresSelecionadosIDs" class="control-label"></label>
+
+                <select asp-for="AutoresSelecionadosIDs" class="form-control" asp-items="@Model.AutoresDisponiveis" multiple>
+                </select>
+
+                <span asp-validation-for="AutoresSelecionadosIDs" class="text-danger"></span>
+                <small class="form-text text-muted">Segure Ctrl (ou Cmd no Mac) para selecionar mais de um autor.</small>
+            </div>
+
+            <div class="form-group mt-3">
                 <input type="submit" value="Salvar" class="btn btn-primary" />
             </div>
         </form>
@@ -41,9 +54,11 @@
 </div>
 
 <div>
-    <a asp-action="Index">Voltar</a>
+    <a asp-action="Index">Voltar para a Lista</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
