@@ -6,7 +6,6 @@ namespace Biblioteca.Models
 {
     public class LivroEditViewModel
     {
-        // Precisamos do ID para o POST
         public int LivroId { get; set; }
 
         [Required(ErrorMessage = "O nome do livro é obrigatório.")]
